@@ -8,11 +8,11 @@ import numpy as np
 from std_msgs.msg import Float64MultiArray, Float64
 
 
-def sinusoidal_movement_publisher():
+def vision_1_task2_1_solution():
 
     # Defines publisher and subscriber
     # initialize the node named
-    rospy.init_node('sinusoidal_movement_publisher', anonymous=True)
+    rospy.init_node('vision_1_task2_1_solution', anonymous=True)
     rate = rospy.Rate(50)  # 50hz
     # initialize a publisher for each joint
     joint2_pub = rospy.Publisher("/robot/joint2_position_controller/command", Float64, queue_size=10)
@@ -46,7 +46,7 @@ def sinusoidal_movement_publisher():
 # run the code if the node is called
 if __name__ == '__main__':
     try:
-        sinusoidal_movement_publisher()
+        vision_1_task2_1_solution()
     except rospy.ROSInterruptException:
         pass
 
