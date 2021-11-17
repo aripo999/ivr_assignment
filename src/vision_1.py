@@ -5,8 +5,7 @@ import sys
 import rospy
 import cv2
 import numpy as np
-from std_msgs.msg import Float64MultiArray, Float64
-
+from std_msgs.msg import Float64, Image
 
 def vision_1_task2_1_solution():
 
@@ -18,6 +17,9 @@ def vision_1_task2_1_solution():
     joint2_pub = rospy.Publisher("/robot/joint2_position_controller/command", Float64, queue_size=10)
     joint3_pub = rospy.Publisher("/robot/joint3_position_controller/command", Float64, queue_size=10)
     joint4_pub = rospy.Publisher("/robot/joint4_position_controller/command", Float64, queue_size=10)
+
+    camera_1_sub = rospy.Subscriber("/camera1/robot/image_raw", Image, callback)
+    camera_2_sub = rospy.Subscriber("/camera2/robot/image_raw", Image, callback)
 
     t0 = rospy.get_time()
     while not rospy.is_shutdown():
@@ -42,7 +44,8 @@ def vision_1_task2_1_solution():
 
         rate.sleep()
 
-
+def callback():
+    return
 # run the code if the node is called
 if __name__ == '__main__':
     try:
