@@ -27,13 +27,13 @@ def sinusoidal_movement_publisher():
         joint3_value = np.pi/2 * np.sin(np.pi / 20 * cur_time)
         joint4_value = np.pi/2 * np.sin(np.pi / 18 * cur_time)
         
-        joint2 = Float64
+        joint2 = Float64()
         joint2.data = joint2_value
 
-        joint3 = Float64
+        joint3 = Float64()
         joint3.data = joint3_value
 
-        joint4 = Float64
+        joint4 = Float64()
         joint4.data = joint4_value
 
         joint2_pub.publish(joint2)
