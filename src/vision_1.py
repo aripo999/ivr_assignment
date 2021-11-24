@@ -12,18 +12,17 @@ from cv_bridge import CvBridge, CvBridgeError
 class JointEstimation1:
 
     def __init__(self):
-        # Defines publisher and subscriber
-        # initialize the node named
+
+        debug = True
+
+        # initialize the node
         rospy.init_node('vision_1_task2_1_solution', anonymous=True)
         rate = rospy.Rate(50)  # 50hz
-        # initialize a publisher for each joint
-        joint2_pub = rospy.Publisher("/robot/joint2_position_controller/command", Float64, queue_size=10)
-        joint3_pub = rospy.Publisher("/robot/joint3_position_controller/command", Float64, queue_size=10)
-        joint4_pub = rospy.Publisher("/robot/joint4_position_controller/command", Float64, queue_size=10)
 
-        joint2_est_pub = rospy.Publisher("/robot/joint2_estimation", Float64, queue_size=10)
-        joint3_est_pub = rospy.Publisher("/robot/joint3_estimation", Float64, queue_size=10)
-        joint4_est_pub = rospy.Publisher("/robot/joint4_estimation", Float64, queue_size=10)
+        # initialize a publisher for each joint
+        self.joint2_est_pub = rospy.Publisher("/robot/joint2_estimation", Float64, queue_size=10)
+        self.joint3_est_pub = rospy.Publisher("/robot/joint3_estimation", Float64, queue_size=10)
+        self.joint4_est_pub = rospy.Publisher("/robot/joint4_estimation", Float64, queue_size=10)
 
         camera_1_sub = rospy.Subscriber("/camera1/robot/image_raw", Image, self.callback1)
         camera_2_sub = rospy.Subscriber("/camera2/robot/image_raw", Image, self.callback2)
@@ -31,49 +30,19 @@ class JointEstimation1:
         # initialize the bridge between openCV and ROS
         self.bridge = CvBridge()
 
-        self.cv_image_x = np.array([])
-        self.cv_image_y = np.array([])
+        self.cv_image_x = np.array([], dtype=np.uint8)
+        self.cv_image_y = np.array([], dtype=np.uint8)
 
         self.pixel2meter_factor = None
 
-        t0 = rospy.get_time()
-        while not rospy.is_shutdown():
-            cur_time = np.array([rospy.get_time()]) - t0
-            #y_d = float(6 + np.absolute(1.5* np.sin(cur_time * np.pi/100)))
-            joint2_value = np.pi/2 * np.sin(np.pi / 15 * cur_time)
-            joint3_value = np.pi/2 * np.sin(np.pi / 20 * cur_time)
-            joint4_value = np.pi/2 * np.sin(np.pi / 18 * cur_time)
-
-            joint2 = Float64()
-            joint2.data = joint2_value
-
-            joint3 = Float64()
-            joint3.data = joint3_value
-
-            joint4 = Float64()
-            joint4.data = joint4_value
-
-            joint2_pub.publish(joint2)
-            joint3_pub.publish(joint3)
-            joint4_pub.publish(joint4)
-
-            if self.cv_image_x.size != 0 and self.cv_image_y.size != 0:
-                cv2.imshow('window1', self.cv_image_x)
-                cv2.waitKey(1)
-                cv2.imshow('window2', self.cv_image_y)
-                cv2.waitKey(1)
-
-                joint2_est = Float64()
-                joint2_est.data = self.detect_joint_angles(self.cv_image_x, self.cv_image_y)[0]
-                joint2_est_pub.publish(joint2_est)
-                joint3_est = Float64()
-                joint3_est.data = self.detect_joint_angles(self.cv_image_x, self.cv_image_y)[1]
-                joint3_est_pub.publish(joint3_est)
-                joint4_est = Float64()
-                joint4_est.data = self.detect_joint_angles(self.cv_image_x, self.cv_image_y)[2]
-                joint4_est_pub.publish(joint4_est)
-
-            rate.sleep()
+        if debug:
+            while not rospy.is_shutdown():
+                if self.cv_image_x.size != 0 and self.cv_image_y.size != 0:
+                    cv2.imshow('window1', self.cv_image_x)
+                    cv2.waitKey(1)
+                    cv2.imshow('window2', self.cv_image_y)
+                    cv2.waitKey(1)
+                rate.sleep()
 
     # In this method you can focus on detecting the centre of the red circle
     def detect_red(self, image):
@@ -144,7 +113,7 @@ class JointEstimation1:
 
 
     # Calculate the relevant joint angles from the image
-    def detect_joint_angles(self,image_1, image_2):
+    def estimate_joint_angles(self,image_1, image_2):
         if self.pixel2meter_factor is None:
             self.pixel2meter_factor = self.pixel2meter(image_1)
         a = self.pixel2meter_factor
@@ -185,21 +154,38 @@ class JointEstimation1:
         print(np.rad2deg(ja3))
         return np.array([ja2, ja3, ja4])
 
+    def process_and_publish(self):
+        if self.cv_image_x.size != 0 and self.cv_image_y.size != 0:
+            joint2_est = Float64()
+            joint2_est.data = self.estimate_joint_angles(self.cv_image_x, self.cv_image_y)[0]
+            self.joint2_est_pub.publish(joint2_est)
+
+            joint3_est = Float64()
+            joint3_est.data = self.estimate_joint_angles(self.cv_image_x, self.cv_image_y)[1]
+            self.joint3_est_pub.publish(joint3_est)
+
+            joint4_est = Float64()
+            joint4_est.data = self.estimate_joint_angles(self.cv_image_x, self.cv_image_y)[2]
+            self.joint4_est_pub.publish(joint4_est)
+
     def callback1(self, data):
-        # Recieve the image
+        # Receive the image
         try:
           self.cv_image_x = self.bridge.imgmsg_to_cv2(data, "bgr8")
         except CvBridgeError as e:
           print(e)
 
+        self.process_and_publish()
+
 
     def callback2(self, data):
-        # Recieve the image
+        # Receive the image
         try:
           self.cv_image_y = self.bridge.imgmsg_to_cv2(data, "bgr8")
         except CvBridgeError as e:
           print(e)
 
+        self.process_and_publish()
 
 # run the code if the node is called
 if __name__ == '__main__':
