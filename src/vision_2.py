@@ -9,15 +9,15 @@ from std_msgs.msg import Float64
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 
-class JointEstimation1:
+class JointEstimation2:
 
     def __init__(self):
         # initialize the node
-        rospy.init_node('vision_1_task2_1_solution', anonymous=True)
+        rospy.init_node('vision_1_task2_2_solution', anonymous=True)
         rate = rospy.Rate(50)  # 50hz
 
         # initialize a publisher for each joint
-        self.joint2_est_pub = rospy.Publisher("joint_angle_2", Float64, queue_size=10)
+        self.joint1_est_pub = rospy.Publisher("joint_angle_1", Float64, queue_size=10)
         self.joint3_est_pub = rospy.Publisher("joint_angle_3", Float64, queue_size=10)
         self.joint4_est_pub = rospy.Publisher("joint_angle_4", Float64, queue_size=10)
 
@@ -32,9 +32,10 @@ class JointEstimation1:
 
         # initialize the bridge between openCV and ROS
         self.bridge = CvBridge()
-        
+
         while not rospy.is_shutdown():
             rate.sleep()
+
 
     # Detecting the centre of the red circle
     def detect_red(self, image):
@@ -134,20 +135,20 @@ class JointEstimation1:
         red3 = a * red_y[1] if red_x is None else a * red_x[1]
 
         # Solve using trigonometry
-        ja2 = - np.arctan2(yellow1 - blue1, yellow3 - blue3)
-        ja3 = np.arctan2(yellow2 - blue2, yellow3 - blue3)
-        ja4 = - np.arctan2(blue1 - red1, blue3 - red3) - ja2
+        ja1 = - np.arctan2(blue1 - green1, blue2 - green2)
+        ja3 = - np.arctan2(yellow2 - blue2, yellow3 - blue3)
+        ja4 = np.arctan2(blue1 - red1, blue3 - red3)
 
-        return np.array([ja2, ja3, ja4])
+        return np.array([ja1, ja3, ja4])
 
     # Find the joint angles and publish them
     def process_and_publish(self):
         if self.cv_image_x.size != 0 and self.cv_image_y.size != 0:
             angles = self.estimate_joint_angles(self.cv_image_x, self.cv_image_y)
 
-            joint2_est = Float64()
-            joint2_est.data = angles[0]
-            self.joint2_est_pub.publish(joint2_est)
+            joint1_est = Float64()
+            joint1_est.data = angles[0]
+            self.joint1_est_pub.publish(joint1_est)
 
             joint3_est = Float64()
             joint3_est.data = angles[1]
@@ -175,10 +176,11 @@ class JointEstimation1:
 
         self.process_and_publish()
 
+
 # run the code if the node is called
 if __name__ == '__main__':
     try:
-        est = JointEstimation1()
+        est = JointEstimation2()
     except rospy.ROSInterruptException:
         pass
 
