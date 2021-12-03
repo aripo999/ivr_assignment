@@ -17,9 +17,9 @@ class JointEstimation2:
         rate = rospy.Rate(50)  # 50hz
 
         # initialize a publisher for each joint
-        self.joint1_est_pub = rospy.Publisher("/robot/joint1_estimation", Float64, queue_size=10)
-        self.joint3_est_pub = rospy.Publisher("/robot/joint3_estimation", Float64, queue_size=10)
-        self.joint4_est_pub = rospy.Publisher("/robot/joint4_estimation", Float64, queue_size=10)
+        self.joint1_est_pub = rospy.Publisher("joint_angle_1", Float64, queue_size=10)
+        self.joint3_est_pub = rospy.Publisher("joint_angle_3", Float64, queue_size=10)
+        self.joint4_est_pub = rospy.Publisher("joint_angle_4", Float64, queue_size=10)
 
         # initialize a subscriber for each camera
         camera_1_sub = rospy.Subscriber("/camera1/robot/image_raw", Image, self.callback1)
