@@ -25,10 +25,6 @@ class JointEstimation2:
         camera_1_sub = rospy.Subscriber("/camera1/robot/image_raw", Image, self.callback1)
         camera_2_sub = rospy.Subscriber("/camera2/robot/image_raw", Image, self.callback2)
 
-        self.j1_angle = 0.0
-        self.j3_angle = 0.0
-        self.j4_angle = 0.0
-
         self.cv_image_x = np.array([], dtype=np.uint8)
         self.cv_image_y = np.array([], dtype=np.uint8)
 
