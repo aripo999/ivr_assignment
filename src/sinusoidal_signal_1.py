@@ -11,7 +11,7 @@ from sensor_msgs.msg import Image
 def sinusoidal_signal():
 
     # initialize the node
-    rospy.init_node('sinusoidal_signal', anonymous=True)
+    rospy.init_node('sinusoidal_signal_1', anonymous=True)
     rate = rospy.Rate(50)  # 50hz
 
     # initialize a publisher for each joint
@@ -22,7 +22,6 @@ def sinusoidal_signal():
     t0 = rospy.get_time()
     while not rospy.is_shutdown():
         cur_time = np.array([rospy.get_time()]) - t0
-        #y_d = float(6 + np.absolute(1.5* np.sin(cur_time * np.pi/100)))
         joint2_value = np.pi/2 * np.sin(np.pi / 15 * cur_time)
         joint3_value = np.pi/2 * np.sin(np.pi / 20 * cur_time)
         joint4_value = np.pi/2 * np.sin(np.pi / 18 * cur_time)
